@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<html lang="es-ES">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="autor" content="FernandoHobby">
+		<link rel="icon" type="image/x-icon" href="favicon.ico">
+		<meta name="description" content="Control coche v7">
+		
+		<link rel="stylesheet" href="CSSCoche.css">
+		
+		<script src="JSCoche.js"></script>
+		
+		<title>Control coche (PC)</title>
+		
+   </head>
+   
+	<body class="no-seleccionable">
+	
+		<p>CONTROL COCHE (PC)</p>
+		
+		<p id="conexion">...</p>
+		
+		
+		<table class="teclas">
+		    <tr class="flechas" >
+				<td class="teclas" onmousedown='pulsa("01")'>&UpperLeftArrow;</td>
+				<td class="teclas" onmousedown='pulsa("02")'>&ShortUpArrow;</td>
+				<td class="teclas" onmousedown='pulsa("03")'>&UpperRightArrow;</td>
+			</tr>
+		  
+		    <tr class="flechasMecanum"> 
+				<td class="teclas"onmousedown='pulsa("04")' onmouseup='pulsa("00")'>&ShortLeftArrow;</td>
+				<td class="teclasNegro" onmousedown='pulsa("00")'>P</td>
+				<td class="teclas"onmousedown='pulsa("06")' onmouseup='pulsa("00")'>&ShortRightArrow;</td>
+		    </tr>
+		  
+		    <tr class="flechas">
+				<td class="teclas"onmousedown='pulsa("07")'>&LowerLeftArrow;</td>
+				<td class="teclas"onmousedown='pulsa("08")'>&ShortDownArrow;</td>
+				<td class="teclas"onmousedown='pulsa("09")'>&LowerRightArrow;</td>
+		    </tr>
+		
+		    <tr class="flechasMecanum">
+				<td class="teclas"onmousedown='pulsa("10")' onmouseup='pulsa("00")'>&circlearrowleft;</td>
+				<td class="teclasOculto"></td>
+				<td class="teclas"onmousedown='pulsa("12")' onmouseup='pulsa("00")'>&circlearrowright;</td>
+		    </tr>
+				
+		</table>
+		
+		<p class="barra">
+			<span id="pwm">pwm = ...</span><br>
+			75
+			<input type="range" min="0" max="12" value="5" onchange='barra(value)'>
+			255
+		</p>  
+				
+		<table class="datos">
+			<tr>
+				<td class="voltaje">voltaje (V)</td>
+				<td>corriente (mA)</td>
+				<td>capacidad (mAh)</td>
+			</tr>
+			<tr>
+				<td id="voltaje">...</td>
+				<td id="corriente">...</td>
+				<td id="capacidad">...</td>
+			</tr>
+		</table>
+		
+		<p id="parar"></p>
+		
+	</body>
+	
+
+</html>

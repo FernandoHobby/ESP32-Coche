@@ -1,0 +1,63 @@
+body {
+	font-family: Verdana, sans-serif;
+	background-color: lightgray;
+	text-align: center; }
+	
+table.teclas {
+	margin: auto;
+	border-spacing: 10px;}
+	
+td.teclas {
+	background-color: Sienna;
+	width: 65px;
+	height: 65px;
+	border-radius: 20%;
+	box-shadow: 5px 5px white;}
+	
+td.teclasNegro {
+	background-color: black;
+	border-radius: 20%;
+	box-shadow: 5px 5px white;}	
+	
+td.teclasOculto {
+	background-color: lightgray;
+	box-shadow:none}
+		
+td:active {
+	transform: translate(5px,5px);
+	box-shadow: none;}
+	
+.flechas {
+	font-size: 50px;
+	color: white;}
+	
+.flechasMecanum {
+	font-size: 50px;
+	color: yellow;}
+
+.no-seleccionable {
+	-webkit-user-select: none; 	/* Safari */
+	-ms-user-select: none; 		/* IE 10 and IE 11 */
+	user-select: none;} 		/* Standard syntax */
+	
+.barra {
+	font-size: 14px;}
+	
+#conexion {
+	font-size: 14px;
+	width:220px; 
+	margin:auto;}
+	
+table.datos {
+	margin: auto;
+	border-spacing: 5px;
+	font-size: 10px;}
+	
+td {
+	background-color: white;
+	width: 70px;
+	height: 30px;}
+
+#parar {
+	font-size: 20px;
+	color: red;}
