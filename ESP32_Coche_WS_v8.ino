@@ -5,12 +5,13 @@
 #include <ESPAsyncWebServer.h>
 // https://github.com/espressif/arduino-esp32/tree/master/libraries/SPIFFS
 #include <SPIFFS.h>
+// https://github.com/bblanchon/ArduinoJson
+#include <ArduinoJson.h>
 // https://github.com/espressif/arduino-esp32/tree/master/libraries/Wire
 #include <Wire.h>
 // https://github.com/flav1972/ArduinoINA219
 #include <INA219.h>
-// https://github.com/bblanchon/ArduinoJson
-#include <ArduinoJson.h>
+
 
 #include "configurar.hpp"
 #include "actuarMotores.hpp"
@@ -18,15 +19,15 @@
 const char *ssid = "Coche";
 const char *password = "12345678";
 
-AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");
-INA219 ina219;
+AsyncWebServer server(80);        // Iniciamos el servidor web en el ESP32. 
+AsyncWebSocket ws("/ws");         // Iniciamos el pluging para poder establecer conexiones mediante websocket
+INA219 ina219;                    // Iniciamos el modulo INA219 para medir voltaje e intensidad.
 
 float voltaje = 0;
 float corriente = 0;
 float capacidad = 0;
-float voltajeCorte = 6.5;   // No descargar bateria por debajo 3 V. En este caso el voltaje de corte sera de 2 x 3,25 = 6,5 voltios
-bool parar = false;
+float voltajeCorte = 6.5;         // No descargar bateria por debajo 3 V. En este caso el voltaje de corte sera de 2 x 3,25 = 6,5 voltios
+bool parar = false;               // Si voltaje bateria < Voltaje corte parar = true y ya no funcionan los motores y es necesario reiniciar 
 
 unsigned long tiempo;
 
@@ -35,7 +36,7 @@ void setup() {
 
   Serial.begin(115200);
   delay(2000);
-  Serial.println("\nIniciando coche v7");
+  Serial.println("\nIniciando coche v8");
 
   iniciarSPIFFS();
   iniciarSoftAP();
@@ -45,18 +46,18 @@ void setup() {
   iniciarPines();
 
   Serial.println("Estado inicial realizarAccion(0,0)");
-  realizarAccion(0,0); // coche parado como estado inicial
+  realizarAccion(0,0);            // Coche parado como estado inicial
 
-  digitalWrite(LedRojo, LOW);
-  digitalWrite(LedVerde, LOW);
+  digitalWrite(LedRojo, LOW);     // Led rojo indicador de voltaje bateria < 6,5 voltios apagado
+  digitalWrite(LedVerde, LOW);    // Led verde indicador de conexion websocket establecida apagado
 
-  tiempo = millis();
+  tiempo = millis();              // Variable tiempo para establecer el lapso entre envios del voltaje y corriente al movil (o PC).
 }
 
 //==============
 void loop() {
 
-  if ( millis() > (tiempo + 100)) {
+  if ( millis() > (tiempo + 200)) {     // Envio del voltaje y corriente al movil aproximadamente cada 200 mseg. 
 
     if (ws.count() > 0) {
 
@@ -67,22 +68,22 @@ void loop() {
         ws.cleanupClients(); 
                      
         corriente = ina219.shuntCurrent() * 1000;           // mA
-        capacidad += corriente * (millis()-tiempo)/3600000; //mAh
+        capacidad += corriente * (millis()-tiempo)/3600000; // mAh
 
-        if (voltaje < voltajeCorte) {     // voltaje de corte sera de 2 x 3,25 = 6,5 voltios
+        if (voltaje < voltajeCorte) {                       // Voltaje de corte es de 2 x 3,25 = 6,5 voltios
           parar = true;
           realizarAccion(0, 0);
           Serial.printf("Atencion, voltaje menor de %4.2f voltios. ...\n", voltajeCorte);
-          ledcWrite(LedRojo_canal, 128);   // led rojo se enciende intermitente con frecuencia 2 Hz.
+          ledcWrite(LedRojo_canal, 128);                     // Led rojo se enciende intermitente con frecuencia 2 Hz.
         }
 
-        String envioControl;
+        String envioControl;                     
         StaticJsonDocument<200> jsonDoc;
         jsonDoc["voltaje"] = voltaje;
         jsonDoc["corriente"] = corriente;
         jsonDoc["capacidad"] = capacidad;
         jsonDoc["parar"] = (parar) ? "Parado por voltaje < " + String(voltajeCorte,1) + " V" : "";
-        serializeJson(jsonDoc, envioControl);
+        serializeJson(jsonDoc, envioControl);      // Serializamos en formato JSON la informacion de voltaje e intensidad a enviar al movil 
         ws.textAll(envioControl); 
         
         tiempo = millis();
@@ -97,7 +98,7 @@ void iniciarSPIFFS() {
 
   SPIFFS.begin();
 
-  if (!SPIFFS.exists("/menuCoche.html")){
+  if (!SPIFFS.exists("/menuCoche.html")) {     // Solo compruebo que esiste un fichero aunque son necesarios todos los indicados en el directorio data
     Serial.println("error SPIFFS");
   } else {
     Serial.println("Ok SPIFFS");
@@ -107,15 +108,16 @@ void iniciarSPIFFS() {
 //--------------
 void iniciarSoftAP() {
 
-  WiFi.softAP(ssid, password,1,0,1);      // reduzco de 4 a 1 el maximo numero de conexiones al SoftAP
+  WiFi.softAP(ssid, password,1,0,1);      // Reduzco de 4 a 1 el maximo numero de conexiones al SoftAP para evitar varios controles simultaneos
   IPAddress IP = WiFi.softAPIP();
   Serial.print("Ok softAP - direccion IP: ");
-  Serial.println(IP);                     // 192.168.4.1
+  Serial.println(IP);                     // La direccion IP del punto de acceso del ESP32 es 192.168.4.1
 }
 
 //--------------
 void iniciarServer() {
 
+  // Establecemos los ruteos en el web server para atender las peticiones del navegador del movil
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("menuCoche.html");
   server.serveStatic("/favicon.png", SPIFFS, "/favicon.png");
   server.onNotFound(noEncontrado);
@@ -131,7 +133,7 @@ void noEncontrado(AsyncWebServerRequest *request){
 //--------------
 void iniciarWebSockets() {
 
-  ws.onEvent(onEvent);
+  ws.onEvent(onEvent);              // Establecemos la funcion de callback que atiende los eventos y datos recibidos por websockets
   server.addHandler(&ws);
   Serial.print("Ok WebSocket\n");
 }
@@ -144,13 +146,12 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     case WS_EVT_CONNECT:
       Serial.printf("WebSocket cliente #%u conectado desde %s\n", client->id(), client->remoteIP().toString().c_str());
       digitalWrite(LedVerde, HIGH);      
-      //ws.text(client->id(), "Server(coche) informa que cliente WebSocket(control) conectado");
       break;
 
     case WS_EVT_DISCONNECT:
       Serial.printf("Cliente WebSocket #%u desconectado\n", client->id());
       digitalWrite(LedVerde, LOW);
-      realizarAccion(0,0); // parar coche por desconexion
+      realizarAccion(0,0);        // Parar coche por desconexion
       break;
 
     case WS_EVT_DATA: {
@@ -165,7 +166,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
           Serial.println(recibido);
 
           StaticJsonDocument<200> jsonDoc;
-          DeserializationError error = deserializeJson(jsonDoc, recibido);
+          DeserializationError error = deserializeJson(jsonDoc, recibido);    // deserializamos de formato JSON el mensaje recibido del movil 
           if (error) {
              Serial.println("Error al deserializar mensaje recibido"); 
           }
@@ -232,6 +233,7 @@ void realizarAccion(int accion, int pwm) {
 //----------
 void iniciarIna219() {
 
+  // Comunicacion I2C
   if (ina219.begin() != 0) {
       Serial.println("error Ina219");
   } else {

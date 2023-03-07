@@ -8,8 +8,8 @@ void motores(int DI_pwm, int DD_pwm, int TI_pwm, int TD_pwm) {
 
     int indice;
 
-    // const valorespwm = [75,90,105,120,135,150,165,180,195,210,225,240,255];   // Valores que recibe el coche del control movil/PC
-    // ancho pwm que igualan las rpm de cada motor
+    // Valores posibles que recibe el coche del control movil/PC = [75,90,105,120,135,150,165,180,195,210,225,240,255];   
+    // Ancho pwm que igualan las rpm de cada motor
     int DI_pwm_h[13] = { 95, 102, 110, 118, 128, 138, 148, 161, 175, 195, 219, 242, 247 };
     int DD_pwm_h[13] = { 76, 83, 91, 98, 106, 114, 123, 134, 147, 163, 183, 212, 233 };
     int TI_pwm_h[13] = { 97, 104, 112, 120, 131, 142, 154, 170, 189, 210, 240, 250, 255 };
